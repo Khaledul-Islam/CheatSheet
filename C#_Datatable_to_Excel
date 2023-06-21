@@ -1,0 +1,33 @@
+using ClosedXML.Excel;
+using System.Data;
+
+public void ExportDataTableToExcel(DataTable dataTable, string filePath)
+{
+    // Create a new workbook
+    using (var workbook = new XLWorkbook())
+    {
+        // Add a worksheet
+        var worksheet = workbook.Worksheets.Add("Sheet1");
+
+        // Set the column headers
+        for (int i = 0; i < dataTable.Columns.Count; i++)
+        {
+            worksheet.Cell(1, i + 1).Value = dataTable.Columns[i].ColumnName;
+        }
+
+        // Populate the data rows
+        for (int row = 0; row < dataTable.Rows.Count; row++)
+        {
+            for (int col = 0; col < dataTable.Columns.Count; col++)
+            {
+                worksheet.Cell(row + 2, col + 1).Value = dataTable.Rows[row][col];
+            }
+        }
+
+        // Auto-fit columns for better visibility
+        worksheet.Columns().AdjustToContents();
+
+        // Save the workbook
+        workbook.SaveAs(filePath);
+    }
+}
