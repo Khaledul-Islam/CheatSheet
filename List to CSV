@@ -1,0 +1,21 @@
+public static byte[] ExportToCsv<T>(this IEnumerable<T> data, params string[] acceptedColumns)
+        {
+            using (var memoryStream = new MemoryStream())
+            using (var writer = new StreamWriter(memoryStream))
+            {
+                var properties = acceptedColumns.Any()
+                    ? typeof(T).GetProperties().Where(property => acceptedColumns.Contains(property.Name))
+                    : typeof(T).GetProperties();
+                var header = string.Join(",", properties.Select(property => property.Name));
+                writer.WriteLine(header);
+                foreach (var item in data)
+                {
+                    var values = properties
+                        .Select(property => property.GetValue(item)?.ToString() ?? string.Empty);
+                    var row = string.Join(",", values);
+                    writer.WriteLine(row);
+                }
+                writer.Flush();
+                return memoryStream.ToArray();
+            }
+        }
