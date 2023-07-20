@@ -1,0 +1,48 @@
+ public static byte[] ExportToExcel<T>(this List<T> itemList, params string[] filterList)
+        {
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Data");
+
+                List<PropertyInfo> propertyInfos;
+                if (filterList.Any())
+                {
+                    propertyInfos = typeof(T).GetProperties()
+                        .Where(prop => filterList.Contains(prop.Name))
+                        .ToList();
+                }
+                else
+                {
+                    propertyInfos = typeof(T).GetProperties().ToList();
+                }
+                var headers = propertyInfos
+                    .Select(property => property.GetCustomAttribute<DisplayNameAttribute>() != null
+                        ? property.GetCustomAttribute<DisplayNameAttribute>().ColumnName : property.Name).ToList();
+                for (var columnIndex = 0; columnIndex < headers.Count; columnIndex++)
+                {
+                    var property = headers[columnIndex];
+                    worksheet.Cells[1, columnIndex + 1].Value = property;
+                    // Set header cell style
+                    using (var headerCell = worksheet.Cells[1, columnIndex + 1])
+                    {
+                        headerCell.Style.Font.Bold = true;
+                        headerCell.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        headerCell.Style.Fill.BackgroundColor.SetColor(Color.LightBlue); // Set your desired color here
+                    }
+                }
+
+                for (var rowIndex = 0; rowIndex < itemList.Count; rowIndex++)
+                {
+                    var item = itemList[rowIndex];
+                    for (var columnIndex = 0; columnIndex < propertyInfos.Count; columnIndex++)
+                    {
+                        var property = propertyInfos[columnIndex];
+                        var value = property.GetValue(item);
+                        worksheet.Cells[rowIndex + 2, columnIndex + 1].Value = value;
+                    }
+                }
+
+                return package.GetAsByteArray();
+            }
+        }
+
