@@ -29,6 +29,10 @@
                         headerCell.Style.Fill.PatternType = ExcelFillStyle.Solid;
                         headerCell.Style.Fill.BackgroundColor.SetColor(Color.LightBlue); // Set your desired color here
                     }
+                    // Calculate and set the column width based on the header size
+                    var headerTextLength = property.Length;
+                    var cellWidth = headerTextLength * 2; // Adjust the multiplication factor as needed
+                    worksheet.Column(columnIndex + 1).Width = cellWidth;
                 }
 
                 for (var rowIndex = 0; rowIndex < itemList.Count; rowIndex++)
@@ -45,4 +49,3 @@
                 return package.GetAsByteArray();
             }
         }
-
